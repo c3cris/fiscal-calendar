@@ -2,6 +2,7 @@ export enum WeekGrouping {
   Group445,
   Group544,
   Group454,
+  Group4x13
 }
 export enum LastDayOfWeek {
   Monday = 1,
@@ -43,7 +44,11 @@ export interface RetailCalendarOptions {
   lastMonthOfYear: LastMonthOfYear | number
   weekCalculation: WeekCalculation
   /**
-   * If the value of addLeapWeekToMonth is 11, then the 11th month of the years that have 53 weeks will be extended by an additional week
+   * Zero-based index of the period (month slot in the week distribution) that should absorb
+   * the 53rd week in a 53-week year.
+   * For 12-period calendars valid range is 0–11.
+   * For 4x13 calendars valid range is 0–12.
+   * If undefined (default) the extra week becomes an independent leap week (monthOfYear = -1 in days).
    */
   addLeapWeekToMonth?: number
   beginningMonthIndex?: number
@@ -62,7 +67,7 @@ export const NRFCalendarOptions: RetailCalendarOptions = {
 }
 
 export type RetailCalendarConstructor = {
-  new (calendarOptions: RetailCalendarOptions, year: number): RetailCalendar
+  new(calendarOptions: RetailCalendarOptions, year: number): RetailCalendar
   getRetailCalendar: (
     calendarOptions: RetailCalendarOptions,
     year: number,
@@ -123,7 +128,7 @@ export type WeekOfCalendar = {
   week: RetailCalendarWeek
 }
 
-export {}
+export { }
 
 declare global {
   namespace jest {

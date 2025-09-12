@@ -82,10 +82,18 @@ export const RetailCalendarFactory: RetailCalendarConstructor = class Calendar
   generateMonths(): RetailCalendarMonth[] {
     const months = []
     const beginningIndex = this.getBeginningOfMonthIndex()
+    const weekDistribution = this.getWeekDistribution()
+    const totalPeriods = weekDistribution.length
     let index = beginningIndex
 
-    for (const numberOfWeeks of this.getWeekDistribution()) {
-      const quarterOfYear = Math.floor((index - beginningIndex) / 3) + 1
+    for (const numberOfWeeks of weekDistribution) {
+      const relative = index - beginningIndex
+      const quarterOfYear =
+        totalPeriods === 13
+          // Periods 1-3 = Q1, 4-6 = Q2, 7-9 = Q3, 10-13 = Q4
+          ? Math.min(Math.floor(relative / 3) + 1, 4)
+          // Periods 1-3 = Q1, 4-6 = Q2, 7-9 = Q3, 10-12 = Q4
+          : Math.floor(relative / 3) + 1
       const weeksOfMonth = this.weeks.filter(
         (week) => week.monthOfYear === index,
       )
@@ -185,19 +193,26 @@ export const RetailCalendarFactory: RetailCalendarConstructor = class Calendar
   ): [number, number, number, number] {
     const weekDistribution = this.getWeekDistribution()
     const monthOffset = this.getBeginningOfMonthIndex()
+    const totalMonths = weekDistribution.length
 
     let weekCount = 0
     let monthOfYear = 0
     let weekInQuarter = 0
     let quarterOfYear = 0
 
-    for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+    for (let monthIndex = 0; monthIndex < weekDistribution.length; monthIndex++) {
       const weeksInMonth = weekDistribution[monthIndex]
       monthOfYear = monthIndex + monthOffset
 
-      if (monthIndex % 3 === 0) {
+      const newQuarter =
+        totalMonths === 13
+          // Periods 1-3 = Q1, 4-6 = Q2, 7-9 = Q3, 10-13 = Q4
+          ? Math.min(Math.floor(monthIndex / 3) + 1, 4)
+          // Periods 1-3 = Q1, 4-6 = Q2, 7-9 = Q3, 10-12 = Q4
+          : Math.floor(monthIndex / 3) + 1
+      if (newQuarter !== quarterOfYear) {
+        quarterOfYear = newQuarter
         weekInQuarter = 0
-        quarterOfYear = Math.floor(monthIndex / 3) + 1
       }
 
       for (let weekInMonth = 0; weekInMonth < weeksInMonth; weekInMonth++) {
@@ -234,6 +249,9 @@ export const RetailCalendarFactory: RetailCalendarConstructor = class Calendar
         break
       case WeekGrouping.Group544:
         weekDistribution = [5, 4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4]
+        break
+      case WeekGrouping.Group4x13:
+        weekDistribution = [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
         break
     }
 
